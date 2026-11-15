@@ -31,7 +31,7 @@ $Root    = $PSScriptRoot
 $Build   = Join-Path $Root '.build'
 $FlagsSrc = Join-Path $Root 'lab/flags'
 $Answers = Join-Path $Build 'answers'
-$Levels  = @('1','2','3','4','5')
+$Levels  = @('1','2','3','4','5','6','7')
 
 function Say  { param($m) Write-Host $m }
 function Ok   { param($m) Write-Host "OK  $m" -ForegroundColor Green }
@@ -56,13 +56,15 @@ function Get-Title {
     '3' { "Exposed Docker API over TCP (dockerd on :2375)" }
     '4' { "Privileged + host PID ns    (--privileged --pid=host)" }
     '5' { "No --privileged, just caps  (--cap-add=SYS_ADMIN,SYS_PTRACE --pid=host)" }
+    '6' { "Unauth Engine API, stock container (CVE-2025-9074)" }
+    '7' { "One capability only         (CAP_DAC_READ_SEARCH / open_by_handle_at)" }
   }
 }
 
 function New-Flags {
   New-Item -ItemType Directory -Force -Path $FlagsSrc, $Build | Out-Null
   Set-Content -Path $Answers -Value $null -NoNewline
-  $names = @{ '1'='bind_mount'; '2'='docker_socket'; '3'='tcp_api'; '4'='privileged_pidhost'; '5'='cap_sys_admin' }
+  $names = @{ '1'='bind_mount'; '2'='docker_socket'; '3'='tcp_api'; '4'='privileged_pidhost'; '5'='cap_sys_admin'; '6'='unauth_engine_api'; '7'='dac_read_search' }
   foreach ($n in $Levels) {
     $rnd  = -join ((1..8) | ForEach-Object { '{0:x2}' -f (Get-Random -Maximum 256) })
     $flag = "ESD26{$($names[$n])_$rnd}"

@@ -17,7 +17,7 @@ cd "$ROOT"
 BUILD="$ROOT/.build"
 FLAGS_SRC="$ROOT/lab/flags"
 ANSWERS="$BUILD/answers"
-LEVELS="1 2 3 4 5"
+LEVELS="1 2 3 4 5 6 7"
 COMPOSE="docker compose"
 
 c_grn=$'\033[32m'; c_red=$'\033[31m'; c_ylw=$'\033[33m'; c_dim=$'\033[2m'; c_off=$'\033[0m'
@@ -38,13 +38,15 @@ title() {
     3) echo "Exposed Docker API over TCP (dockerd on :2375)";;
     4) echo "Privileged + host PID ns    (--privileged --pid=host)";;
     5) echo "No --privileged, just caps  (--cap-add=SYS_ADMIN,SYS_PTRACE --pid=host)";;
+    6) echo "Unauth Engine API, stock container (CVE-2025-9074)";;
+    7) echo "One capability only         (CAP_DAC_READ_SEARCH / open_by_handle_at)";;
   esac
 }
 
 gen_flags() {
   mkdir -p "$FLAGS_SRC" "$BUILD"
   : > "$ANSWERS"
-  local names=( [1]=bind_mount [2]=docker_socket [3]=tcp_api [4]=privileged_pidhost [5]=cap_sys_admin )
+  local names=( [1]=bind_mount [2]=docker_socket [3]=tcp_api [4]=privileged_pidhost [5]=cap_sys_admin [6]=unauth_engine_api [7]=dac_read_search )
   for n in $LEVELS; do
     local rnd; rnd="$(head -c8 /dev/urandom | od -An -tx1 | tr -d ' \n')"
     local flag="ESD26{${names[$n]}_${rnd}}"
