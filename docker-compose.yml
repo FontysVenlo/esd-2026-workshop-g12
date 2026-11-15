@@ -1,0 +1,25 @@
+# Docker Compose file for the ESD 2026 workshop lab. 
+# This is the only file you need to run to get the lab up and running. 
+# It builds the host container, which in turn builds the vulnerable container image and runs it with the appropriate flags for each level.
+services:
+  host:
+    build:
+      context: ./lab
+      dockerfile: host/Dockerfile
+    image: esd-workshop-host:latest
+    container_name: esc-host
+    hostname: victim-host
+    # DinD needs this to run its own kernel-namespaced Docker engine.
+    privileged: true
+    environment:
+      - DOCKER_TLS_CERTDIR=
+    volumes:
+      # Named volume for the inner engine's image/container storage. Wiped on
+      # `lab.sh down`.
+      - dind-storage:/var/lib/docker
+      # Bind-mount the host's .build directory read-only so the host 
+      # container can build the vuln image and run it with the appropriate flags for each level.
+      - ./.build:/mnt/build:ro
+
+volumes:
+  dind-storage:

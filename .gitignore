@@ -1,0 +1,5 @@
+# Generated at `./lab.sh up` time -- never committed.
+.build/
+# Flags are regenerated uniquely on every setup so nobody can read the answers
+# out of the repo. Placeholders are documented in lab/flags/README.md instead.
+lab/flags/*.txt
