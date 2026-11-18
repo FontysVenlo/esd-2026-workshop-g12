@@ -1,0 +1,12 @@
+# Everything that runs inside the Linux containers (or via bash) must keep LF
+# line endings, even on Windows checkouts with core.autocrlf=true. A CRLF
+# shebang ("#!/bin/bash\r") makes exec fail with "no such file or directory".
+*.sh          text eol=lf
+*.conf        text eol=lf
+*.c           text eol=lf
+Dockerfile    text eol=lf
+*.yml         text eol=lf
+lab/**        text eol=lf
+
+# The PowerShell launcher is Windows-native.
+*.ps1         text eol=crlf

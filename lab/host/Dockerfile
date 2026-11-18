@@ -17,4 +17,6 @@ RUN chmod 600 /flags/*.txt && chown root:root /flags/*.txt
 
 # Facilitator scripts (launch a level, reset it, check a submission).
 COPY host/scripts/ /opt/lab/
-RUN chmod +x /opt/lab/*.sh
+# Strip Windows CRLF line endings in case the repo was checked out on Windows
+# (or downloaded as a zip) without .gitattributes being applied.
+RUN sed -i 's/\r$//' /opt/lab/* && chmod +x /opt/lab/*.sh
