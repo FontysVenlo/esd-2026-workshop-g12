@@ -155,6 +155,10 @@ function Cmd-Reset {
   Ok "level $n reset"
 }
 
+# Normalize-Flag removes all non-alphanumeric characters and lowercases the string, 
+# so that flags can be compared without quatation marks.
+function Normalize-Flag { param($s) ($s -replace '[^A-Za-z0-9_]', '').ToLowerInvariant() }
+
 function Cmd-Submit {
   param($n, $flagParts)
   $got = ($flagParts -join ' ').Trim()
@@ -166,7 +170,7 @@ function Cmd-Submit {
     if ($parts[0] -eq $n) { $want = $parts[1].Trim() }
   }
   if (-not $want) { Die "unknown level: $n" }
-  if ($got -eq $want) { Ok "Correct! Level $n captured: $want" }
+  if ((Normalize-Flag $got) -eq (Normalize-Flag $want)) { Ok "Correct! Level $n captured: $want" }
   else { Die "Not quite. That flag doesn't match level $n. Keep going!" }
 }
 

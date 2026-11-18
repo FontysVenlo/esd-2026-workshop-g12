@@ -12,6 +12,11 @@
 
 set -euo pipefail
 
+# Disable MSYS path conversion on Windows, so that absolute paths like
+# /c/Users/... are passed through to docker.exe as-is. Otherwise, MSYS
+# would convert them to C:\Users\... which docker.exe doesn't understand.
+export MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*'
+
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
 BUILD="$ROOT/.build"
@@ -73,9 +78,9 @@ cmd_up() {
   say "${c_dim}Generating fresh, unique flags for this run...${c_off}"
   gen_flags
   say "${c_dim}Building the vulnerable image on your machine...${c_off}"
-  docker build -q -t vuln:latest "$ROOT/lab/vulnerable" >/dev/null
+  docker build -q -t vuln:latest lab/vulnerable >/dev/null
   say "${c_dim}Saving it for offline load into the lab...${c_off}"
-  docker save vuln:latest -o "$BUILD/vuln.tar"
+  docker save vuln:latest -o .build/vuln.tar
   say "${c_dim}Building + starting the DinD host...${c_off}"
   $COMPOSE up -d --build
   wait_for_engine
