@@ -40,11 +40,20 @@ function Die  { param($m) Write-Host "X   $m" -ForegroundColor Red; exit 1 }
 
 function Invoke-Compose { docker compose @args }
 
+# Invoke-DockerQuiet runs docker with the given arguments, 
+# suppressing stderr output and returning the exit code.
+function Invoke-DockerQuiet {
+  $saved = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try { docker @args 2>$null }
+  finally { $ErrorActionPreference = $saved }
+}
+
 function Assert-Docker {
   if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
     Die "Docker is not installed / not on PATH."
   }
-  docker info *> $null
+  Invoke-DockerQuiet info | Out-Null
   if ($LASTEXITCODE -ne 0) { Die "Docker daemon not reachable. Is Docker Desktop running?" }
 }
 
@@ -74,7 +83,7 @@ function New-Flags {
 }
 
 function Test-HostReady {
-  docker compose exec -T host docker info *> $null
+  Invoke-DockerQuiet compose exec -T host docker info | Out-Null
   return ($LASTEXITCODE -eq 0)
 }
 
@@ -130,7 +139,7 @@ function Cmd-Enter {
   if (-not $n) { Die "usage: lab.ps1 enter <level>" }
   Assert-Docker
   if (-not (Test-HostReady)) { Die "lab is not running -- run '.\lab.ps1 up' first." }
-  $running = docker compose exec -T host docker inspect -f '{{.State.Running}}' "level$n" 2>$null
+  $running = Invoke-DockerQuiet compose exec -T host docker inspect -f '{{.State.Running}}' "level$n"
   if ($running -notmatch 'true') { docker compose exec -T host /opt/lab/launch.sh $n }
   Say "Entering level $n. Goal: escape this container and read /flags/level$n.txt on the host."
   Say "Type 'exit' to leave."
@@ -141,7 +150,7 @@ function Cmd-Reset {
   param($n)
   if (-not $n) { Die "usage: lab.ps1 reset <level>" }
   Assert-Docker
-  docker compose exec -T host docker rm -f "level$n" 2>$null | Out-Null
+  Invoke-DockerQuiet compose exec -T host docker rm -f "level$n" | Out-Null
   Cmd-Start $n
   Ok "level $n reset"
 }
